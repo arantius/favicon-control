@@ -17,7 +17,7 @@
       </vbox>
       <spacer flex='99' />
       <vbox>
-        <button label='Set' flex='1' />
+        <button label='Set' flex='1' oncommand='FaviconControl_Set()' />
         <hbox>
           <button label='Reset' flex='1' />
           <button label='Clear' flex='1' />
