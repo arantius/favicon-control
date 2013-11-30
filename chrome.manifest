@@ -1,4 +1,2 @@
 content favicon-control content/
-skin favicon-control classic/1.0 skin/
-
 overlay chrome://browser/content/places/bookmarkProperties.xul chrome://favicon-control/content/overlay.xul
