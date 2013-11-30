@@ -5,19 +5,40 @@ Components.utils.import("resource://gre/modules/Services.jsm");
   var _origInitPanel = gEditItemOverlay.initPanel;
   gEditItemOverlay.initPanel = function(aFor,  aInfo) {
     _origInitPanel.call(gEditItemOverlay,  aFor,  aInfo);
-
-    FaviconControl_SetDisplay();
+    // Also set icon display when init'ing the edit panel.
+    FaviconControl_SetDisplay(gEditItemOverlay.uri);
   };
 })();
 
-function FaviconControl_SetDisplay() {
-    PlacesUtils.favicons.getFaviconURLForPage(
-        gEditItemOverlay.uri,
-        function(aUri) {
-          dump('current page has icon: ' + aUri.spec + '\n');
-          document.getElementById('favicon-control-img')
-              .setAttribute('src',  'moz-anno:favicon:' + aUri.spec);
-        });
+// Base implementation:
+
+function FaviconControl_SetDisplay(aPageUri) {
+  var displayEl = document.getElementById('favicon-control-img');
+  if (!displayEl) return;
+
+  PlacesUtils.favicons.getFaviconURLForPage(
+      aPageUri,
+      function(aIconUri) {
+        displayEl.setAttribute('src',  'moz-anno:favicon:' + aIconUri.spec);
+      });
+}
+
+function FaviconControl_SetPageIcon(aPageUri, aIconUri) {
+  // Set the back end data.
+  PlacesUtils.favicons.setAndFetchFaviconForPage(
+      aPageUri, aIconUri,
+      true,  // aForceReload
+      PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
+      function() {
+        FaviconControl_SetDisplay(aPageUri);
+      });
+}
+
+// XUL callbacks:
+
+function FaviconControl_Clear() {
+  FaviconControl_SetPageIcon(
+      gEditItemOverlay.uri, PlacesUtils.favicons.defaultFavicon);
 }
 
 function FaviconControl_Set() {
@@ -47,12 +68,6 @@ function FaviconControl_Set() {
 
   if (fp.show() != nsIFilePicker.returnOK) return;
 
-  PlacesUtils.favicons.setAndFetchFaviconForPage(
-      gEditItemOverlay.uri,
-      Services.io.newFileURI(fp.file),
-      true,  // aForceReload
-      PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-      function() {
-        FaviconControl_SetDisplay();
-      });
+  FaviconControl_SetPageIcon(
+      gEditItemOverlay.uri, Services.io.newFileURI(fp.file));
 }
