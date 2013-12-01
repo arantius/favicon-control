@@ -16,10 +16,13 @@
         <spacer flex='1' />
       </vbox>
       <spacer flex='99' />
-      <hbox>
-        <button label='Set' flex='1' oncommand='FaviconControl_Set()' />
-        <button label='Clear' flex='1' oncommand='FaviconControl_Clear()' />
-      </hbox>
+      <vbox>
+        <button label='Browse' flex='1' oncommand='FaviconControl_Set()' />
+        <hbox>
+          <button label='Clear' flex='1' oncommand='FaviconControl_Clear()' />
+          <button label='Export' flex='1' oncommand='FaviconControl_Export()' />
+        </hbox>
+      </vbox>
       <spacer flex='99' />
     </hbox>
   </row>

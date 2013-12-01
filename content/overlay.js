@@ -1,3 +1,4 @@
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import('resource://gre/modules/PlacesUtils.jsm');
 Components.utils.import("resource://gre/modules/Services.jsm");
 
@@ -73,6 +74,30 @@ function FaviconControl_SetPageIcon(aPageUri, aIconUri) {
 function FaviconControl_Clear() {
   FaviconControl_IconToSet = PlacesUtils.favicons.defaultFavicon;
   FaviconControl_SetDisplayByIcon(PlacesUtils.favicons.defaultFavicon);
+}
+
+function FaviconControl_Export() {
+  var nsIFilePicker = Components.interfaces.nsIFilePicker;
+  var fp = Components.classes["@mozilla.org/filepicker;1"]
+      .createInstance(nsIFilePicker);
+  fp.init(window, "Select a File", nsIFilePicker.modeSave);
+  if (fp.show() != nsIFilePicker.returnOK) return;
+
+  // TODO: Save currently browsed but not yet saved icon?
+  // TODO: Convert to known image format?
+  PlacesUtils.favicons.getFaviconURLForPage(
+      gEditItemOverlay.uri,
+      function(aIconUri) {
+        var stream = NetUtil.asyncFetch(
+            aIconUri,
+            function(aInputStream, aResult, aRequest) {
+              var oStream = Components
+                  .classes["@mozilla.org/network/file-output-stream;1"]
+                  .createInstance(Components.interfaces.nsIFileOutputStream);
+              oStream.init(fp.file, -1, -1, 0);
+              NetUtil.asyncCopy(aInputStream, oStream, function() { });
+            });
+      });
 }
 
 function FaviconControl_Set() {
